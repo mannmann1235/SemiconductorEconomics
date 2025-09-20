@@ -1,0 +1,21 @@
+# Ignore Windows system files
+AppData/
+*.log
+Thumbs.db
+*.tmp
+*.DS_Store
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+.env/
+
+# Ignore Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+add .gitignore
