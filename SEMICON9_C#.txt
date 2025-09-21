@@ -1,0 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program
+{
+    static void Main()
+    {
+        // Sample electrical measurements (simulated data)
+        double[] leakageCurrents = { 0.5, 0.52, 0.55, 0.6, 0.65, 0.7, 0.72, 0.8, 0.9, 1.0 };
+
+        // Probability & Statistics
+        double mean = leakageCurrents.Average();
+        double stdDev = Math.Sqrt(leakageCurrents.Select(x => Math.Pow(x - mean, 2)).Average());
+
+        Console.WriteLine("=== Probability & Statistics ===");
+        Console.WriteLine($"Mean Leakage Current: {mean:F3}");
+        Console.WriteLine($"Std Dev: {stdDev:F3}");
+        Console.WriteLine($"Confidence Interval (95%): [{mean - 1.96 * stdDev / Math.Sqrt(leakageCurrents.Length):F3}, {mean + 1.96 * stdDev / Math.Sqrt(leakageCurrents.Length):F3}]");
+        Console.WriteLine();
+
+        // Regression Analysis (simple linear regression y = a + bx)
+        double[] processVar = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }; // independent variable
+        (double a, double b) = LinearRegression(processVar, leakageCurrents);
+
+        Console.WriteLine("=== Regression Analysis ===");
+        Console.WriteLine($"Model: Leakage = {a:F3} + {b:F3}*ProcessVar");
+        Console.WriteLine($"Prediction (ProcessVar=11): {a + b * 11:F3}");
+        Console.WriteLine();
+
+        // PCA (Principal Component Analysis simplified to variance ratio)
+        double totalVar = leakageCurrents.Select(x => Math.Pow(x - mean, 2)).Sum();
+        double pc1Var = leakageCurrents.Take(leakageCurrents.Length / 2).Select(x => Math.Pow(x - mean, 2)).Sum();
+        double explainedRatio = pc1Var / totalVar;
+
+        Console.WriteLine("=== Principal Component Analysis (PCA) ===");
+        Console.WriteLine($"Explained Variance (PC1 approx): {explainedRatio:P2}");
+        Console.WriteLine();
+
+        Console.WriteLine("Summary:");
+        Console.WriteLine("- Probability & Statistics quantify yield risk.");
+        Console.WriteLine("- Regression links process variables to electrical behavior.");
+        Console.WriteLine("- PCA highlights main drivers of variability.");
+    }
+
+    static (double a, double b) LinearRegression(double[] x, double[] y)
+    {
+        int n = x.Length;
+        double sumX = x.Sum();
+        double sumY = y.Sum();
+        double sumXY = x.Zip(y, (xi, yi) => xi * yi).Sum();
+        double sumX2 = x.Select(xi => xi * xi).Sum();
+
+        double b = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        double a = (sumY - b * sumX) / n;
+
+        return (a, b);
+    }
+}
