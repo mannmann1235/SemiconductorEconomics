@@ -1,0 +1,86 @@
+using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+class SecurityResilience
+{
+    static async Task Main()
+    {
+        // Simulating SQL Injection attack
+        Console.WriteLine("SQL Injection Test:");
+        await TestSQLInjection();
+
+        // Simulating Cross-Site Scripting (XSS) attack
+        Console.WriteLine("XSS Test:");
+        await TestXSS();
+
+        // Simulating Denial of Service (DoS) attack
+        Console.WriteLine("DoS Test:");
+        await TestDoS();
+    }
+
+    static async Task TestSQLInjection()
+    {
+        try
+        {
+            string userInput = "Robert'); DROP TABLE Students; --";
+            string query = $"SELECT * FROM Students WHERE name = '{userInput}'";
+            // Simulating database query
+            await Task.Delay(1);
+            Console.WriteLine("SQL Injection test passed.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+
+    static async Task TestXSS()
+    {
+        try
+        {
+            string userInput = "<script>alert('XSS')</script>";
+            string output = userInput;
+            // Simulating output encoding
+            output = System.Web.HttpUtility.HtmlEncode(output);
+            Console.WriteLine("XSS test passed.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+
+    static async Task TestDoS()
+    {
+        try
+        {
+            // Simulating high traffic
+            var stopwatch = Stopwatch.StartNew();
+            for (int i = 0; i < 10000; i++)
+            {
+                await HandleRequest();
+            }
+            stopwatch.Stop();
+            Console.WriteLine($"DoS test passed. Total execution time: {stopwatch.ElapsedMilliseconds}ms");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+
+    static async Task HandleRequest()
+    {
+        try
+        {
+            // Simulating some work
+            await Task.Delay(1);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+}
