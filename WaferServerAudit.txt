@@ -1,0 +1,110 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <unistd.h>   // getpagesize(), sleep()
+#include <ctime>
+
+// 🔹 Memory Usage in MB
+long getMemoryUsageMB() {
+    std::ifstream statm("/proc/self/statm");
+    long size;
+    statm >> size;
+    return (size * getpagesize()) / (1024 * 1024);
+}
+
+// 🔹 CPU Usage (%) from /proc/stat
+double getCPUUsage() {
+    static long long lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle;
+    double percent;
+    std::ifstream fileStat("/proc/stat");
+
+    std::string cpu;
+    long long user, nice, system, idle;
+    fileStat >> cpu >> user >> nice >> system >> idle;
+
+    if (lastTotalUser == 0 && lastTotalSys == 0 && lastTotalIdle == 0) {
+        lastTotalUser = user;
+        lastTotalUserLow = nice;
+        lastTotalSys = system;
+        lastTotalIdle = idle;
+        return 0.0;
+    }
+
+    long long totalUser = user - lastTotalUser;
+    long long totalUserLow = nice - lastTotalUserLow;
+    long long totalSys = system - lastTotalSys;
+    long long totalIdle = idle - lastTotalIdle;
+
+    long long total = totalUser + totalUserLow + totalSys;
+    percent = (double)(total) / (total + totalIdle) * 100.0;
+
+    lastTotalUser = user;
+    lastTotalUserLow = nice;
+    lastTotalSys = system;
+    lastTotalIdle = idle;
+
+    return percent;
+}
+
+// 🔹 Get current timestamp
+std::string getTimestamp() {
+    time_t now = time(0);
+    char buf[80];
+    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime(&now));
+    return std::string(buf);
+}
+
+int main() {
+    std::ofstream auditLog("audit_log.txt", std::ios::app); // append mode
+
+    int counter = 0;
+    while (true) {
+        system("clear"); // terminal dashboard refresh
+        double cpu = getCPUUsage();
+        long mem = getMemoryUsageMB();
+
+        std::cout << "==================[ IT Audit Dashboard ]==================" << std::endl;
+        std::cout << "Timestamp:    " << getTimestamp() << std::endl;
+        std::cout << "CPU Usage:    " << cpu << " %" << std::endl;
+        std::cout << "Memory Usage: " << mem << " MB" << std::endl;
+        std::cout << "==========================================================" << std::endl;
+
+        // 🔹 Log every 1 hour (3600s), for demo every 10 cycles = 10s
+        if (counter % 10 == 0) { 
+            auditLog << getTimestamp() 
+                     << " | CPU: " << cpu << "% | Memory: " << mem << " MB\n";
+            auditLog.flush(); // make sure it saves immediately
+        }
+
+        sleep(1); // refresh every 1s
+        counter++;
+    }
+
+    auditLog.close();
+    return 0;
+}
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using HtmlAgilityPack;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        var url = "https://ourworldindata.org/energy-production-consumption";
+        var httpClient = new HttpClient();
+        var response = await httpClient.GetAsync(url);
+        var html = await response.Content.ReadAsStringAsync();
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        // Extract data from HTML nodes
+        var nodes = doc.DocumentNode.SelectNodes("//table");
+        foreach (var node in nodes)
+        {
+            // Process table data
+        }
+    }
+}
