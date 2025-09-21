@@ -1,0 +1,39 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+public class WebsiteChecker
+{
+    public static async Task CheckWebsiteStatus(string url)
+    {
+        using (var client = new HttpClient())
+        {
+            try
+            {
+                // Tries to get the response from the website.
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                // Checks if the status code is "OK" (200).
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Website is Online. Status Code: {(int)response.StatusCode} ({response.StatusCode})");
+                }
+                else
+                {
+                    Console.WriteLine($"Website is Offline or has an issue. Status Code: {(int)response.StatusCode} ({response.StatusCode})");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // If there's a request error (for example, the server can't be reached), prints an error.
+                Console.WriteLine($"Website is Offline or there was a network error. Error: {ex.Message}");
+            }
+        }
+    }
+
+    public static async Task Main(string[] args)
+    {
+        string coingeckoUrl = "https://www.coingecko.com/en/coins/nasdaq420";
+        await CheckWebsiteStatus(coingeckoUrl);
+    }
+}
