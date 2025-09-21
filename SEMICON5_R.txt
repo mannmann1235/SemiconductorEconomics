@@ -1,0 +1,35 @@
+library(DiagrammeR)
+
+grViz("
+digraph semiconductor_pipeline {
+
+  # Graph attributes
+  graph [layout = dot, rankdir = TB, splines = ortho]
+
+  # Nodes
+  node [shape = box, style = filled, color = LightBlue]
+
+  Production [label='Semiconductor Production\nData Pipeline']
+
+  Metrology [label='Metrology / Inspection\n(SEM, AFM, AOI)']
+  FinalTest [label='Final Test / Electrical Test\n(ATE)']
+  Tracking [label='Tracking & Traceability\n(RFID/Barcode + MES)']
+
+  Metrics1 [label='Collected Metrics:\n- Layer alignment\n- Defects\n- Thickness', shape=note, color=LightYellow]
+  Metrics2 [label='Collected Metrics:\n- Speed\n- Leakage\n- Yield\n- Voltage', shape=note, color=LightYellow]
+
+  Storage1 [label='Storage Type:\nRelational DB / MES / LIMS', shape=folder, color=LightGreen]
+  Storage2 [label='Storage Type:\nRelational DB / ATE Log Database', shape=folder, color=LightGreen]
+  Storage3 [label='Tracking Storage:\nMES + Centralized DB', shape=folder, color=LightGreen]
+
+  # Edges
+  Production -> Metrology
+  Production -> FinalTest
+  Production -> Tracking
+
+  Metrology -> Metrics1 -> Storage1
+  FinalTest -> Metrics2 -> Storage2
+  Tracking -> Storage3
+
+}
+")
