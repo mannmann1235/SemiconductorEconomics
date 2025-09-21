@@ -1,0 +1,66 @@
+using System;
+
+namespace SemiconductorPipeline
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Simulate data collected from each sensor
+            bool metrologyDataValid = CollectMetrologyData();
+            bool finalTestDataValid = false;
+            bool trackingDataValid = false;
+
+            // Cube 1: Metrology / Inspection
+            if (metrologyDataValid)
+            {
+                Console.WriteLine("Cube 1: Metrology data collected successfully.");
+
+                // Cube 2: Final Test / Electrical Test
+                finalTestDataValid = CollectFinalTestData();
+                if (finalTestDataValid)
+                {
+                    Console.WriteLine("Cube 2: Final Test data collected successfully.");
+
+                    // Cube 3: Tracking & Traceability
+                    trackingDataValid = CollectTrackingData();
+                    if (trackingDataValid)
+                    {
+                        Console.WriteLine("Cube 3: Tracking & Traceability data collected successfully.");
+                        Console.WriteLine("All stages completed successfully. Production pipeline is validated.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cube 3: Tracking data missing. Pipeline halted.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Cube 2: Final Test data invalid. Pipeline halted.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cube 1: Metrology data invalid. Pipeline halted.");
+            }
+        }
+
+        static bool CollectMetrologyData()
+        {
+            // Simulate sensor check (replace with real data collection logic)
+            return true; // assume valid
+        }
+
+        static bool CollectFinalTestData()
+        {
+            // Simulate ATE data collection
+            return true; // assume valid
+        }
+
+        static bool CollectTrackingData()
+        {
+            // Simulate MES / RFID traceability check
+            return true; // assume valid
+        }
+    }
+}
