@@ -1,0 +1,38 @@
+library(plotly)
+library(dplyr)
+library(lubridate)
+
+# Create a Month column
+Semiconductor101 <- Semiconductor101 %>%
+  mutate(Month = month(Timestamp, label = TRUE, abbr = TRUE))  # e.g., "Jan", "Feb"
+
+# Aggregate average demand (or price as proxy) per month
+monthly_summary <- Semiconductor101 %>%
+  group_by(Month) %>%
+  summarise(Avg_Demand = mean(Price_Wafer1, na.rm = TRUE)) %>%
+  arrange(match(Month, month.abb))  # ensure proper month order
+
+# Highlight the month(s) with highest demand
+max_demand <- max(monthly_summary$Avg_Demand)
+monthly_summary$Highlight <- ifelse(monthly_summary$Avg_Demand == max_demand, "Highest Demand", "Normal")
+
+# Build interactive Plotly bar chart
+seasonality_plot <- plot_ly(
+  data = monthly_summary,
+  x = ~Month,
+  y = ~Avg_Demand,
+  type = "bar",
+  color = ~Highlight,
+  colors = c("steelblue", "firebrick"),  # normal vs highest demand
+  text = ~paste("Month:", Month, "<br>Avg Demand:", round(Avg_Demand,2)),
+  hoverinfo = "text"
+) %>%
+  layout(
+    title = "Monthly Seasonality of Demand - Business Signal",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Average Demand / Price"),
+    showlegend = TRUE
+  )
+
+# Show plot
+seasonality_plot

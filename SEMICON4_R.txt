@@ -1,0 +1,236 @@
+library(shiny)
+library(plotly)
+library(htmltools)
+
+# Create sample plots since the original plots are assumed to exist
+# You can replace these with your actual plots
+
+# Sample Kolmogorov plot
+kolmo_plot <- plot_ly(
+  x = ~c(1:100), 
+  y = ~cumsum(rnorm(100, 0.05, 0.02)), 
+  type = 'scatter', 
+  mode = 'lines',
+  name = 'Early Prototypes'
+) %>%
+  add_trace(
+    x = ~c(1:100), 
+    y = ~cumsum(rnorm(100, 0.03, 0.015)), 
+    name = 'Advanced Prototypes'
+  ) %>%
+  layout(
+    title = "ECDF - Error Rate Distribution",
+    xaxis = list(title = "Sample Index"),
+    yaxis = list(title = "Cumulative Error Rate")
+  )
+
+# Sample PCA plot
+pca_plot <- plot_ly(
+  x = ~rnorm(50, 0, 1), 
+  y = ~rnorm(50, 0, 1), 
+  type = 'scatter', 
+  mode = 'markers',
+  marker = list(size = 8, color = 'blue'),
+  text = ~paste("Device", 1:50)
+) %>%
+  layout(
+    title = "PCA: Device Capability Space",
+    xaxis = list(title = "PC1 (Coherence Time)"),
+    yaxis = list(title = "PC2 (Gate Fidelity)")
+  )
+
+# Sample disparity plot
+disparity_plot <- plot_ly(
+  x = ~c(1:30), 
+  y = ~abs(rnorm(30, 2, 1)), 
+  type = 'scatter', 
+  mode = 'markers',
+  marker = list(
+    size = 10, 
+    color = ~abs(rnorm(30, 2, 1)), 
+    colorscale = 'Viridis'
+  )
+) %>%
+  layout(
+    title = "Mahalanobis Distance - Statistical Outliers",
+    xaxis = list(title = "Device ID"),
+    yaxis = list(title = "Mahalanobis Distance")
+  )
+
+# Sample seasonality plot
+months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+seasonality_plot <- plot_ly(
+  x = ~months, 
+  y = ~c(85, 78, 92, 88, 95, 102, 98, 89, 94, 91, 87, 83), 
+  type = 'scatter', 
+  mode = 'lines+markers',
+  line = list(color = 'green', width = 3),
+  marker = list(size = 8, color = 'darkgreen')
+) %>%
+  layout(
+    title = "Monthly Production Demand Pattern",
+    xaxis = list(title = "Month"),
+    yaxis = list(title = "Demand Index")
+  )
+
+ui <- fluidPage(
+  titlePanel("Quantum Device Analytics - Business & R&D Insights"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      width = 3,
+      h4("Analytics Navigation"),
+      helpText("Select a branch to explore detailed analytics and insights."),
+      
+      # Navigation buttons
+      actionButton("show_branch1", "Performance Distribution", 
+                  class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
+      actionButton("show_branch2", "Device Capability (PCA)", 
+                  class = "btn-info", style = "width: 100%; margin-bottom: 10px;"),
+      actionButton("show_branch3", "Statistical Outliers", 
+                  class = "btn-warning", style = "width: 100%; margin-bottom: 10px;"),
+      actionButton("show_branch4", "Seasonality Analysis", 
+                  class = "btn-success", style = "width: 100%; margin-bottom: 10px;"),
+      
+      hr(),
+      h5("Tree Structure:"),
+      tags$ul(
+        tags$li("Device Performance Distribution", 
+               tags$ul(tags$li("Kolmogorov ECDF Analysis"))),
+        tags$li("Device Capability Analysis", 
+               tags$ul(tags$li("PCA Scatter Plot"), 
+                      tags$li("Variance Components"))),
+        tags$li("Statistical Analysis", 
+               tags$ul(tags$li("Mahalanobis Distance"))),
+        tags$li("Business Intelligence", 
+               tags$ul(tags$li("Seasonal Patterns")))
+      )
+    ),
+    
+    mainPanel(
+      width = 9,
+      
+      # Dynamic content area
+      conditionalPanel(
+        condition = "input.show_branch1 % 2 == 1",
+        div(id = "branch1_content",
+            h3("Branch 1: Performance Distribution Analysis"),
+            p("This analysis compares early vs advanced quantum chip prototypes using 
+              ECDF (Empirical Cumulative Distribution Function) methodology. The plot reveals 
+              the cumulative distribution of error rates across different device generations."),
+            plotlyOutput("kolmoPlotOutput", height = "400px"),
+            br(),
+            div(class = "alert alert-info",
+                h5("Key Insights:"),
+                tags$ul(
+                  tags$li("Advanced prototypes show lower cumulative error rates"),
+                  tags$li("Distribution patterns indicate improved manufacturing consistency"),
+                  tags$li("Statistical significance can guide production decisions")
+                )
+            )
+        )
+      ),
+      
+      conditionalPanel(
+        condition = "input.show_branch2 % 2 == 1",
+        div(id = "branch2_content",
+            h3("Branch 2: Device Capability Space (PCA)"),
+            p("Principal Component Analysis reveals the multivariate capability landscape 
+              of quantum devices, mapping coherence time versus gate fidelity. Outliers 
+              in this space often indicate experimental breakthroughs or manufacturing anomalies."),
+            plotlyOutput("pcaPlotOutput", height = "400px"),
+            br(),
+            div(class = "alert alert-success",
+                h5("Strategic Applications:"),
+                tags$ul(
+                  tags$li("Identify high-performance device clusters"),
+                  tags$li("Detect breakthrough candidates in outlier regions"),
+                  tags$li("Guide R&D resource allocation")
+                )
+            )
+        )
+      ),
+      
+      conditionalPanel(
+        condition = "input.show_branch3 % 2 == 1",
+        div(id = "branch3_content",
+            h3("Branch 3: Statistical Disparity & Outlier Detection"),
+            p("Mahalanobis distance analysis identifies devices that significantly deviate 
+              from expected performance parameters. High disparity scores flag units 
+              requiring detailed inspection or potential breakthrough analysis."),
+            plotlyOutput("disparityPlotOutput", height = "400px"),
+            br(),
+            div(class = "alert alert-warning",
+                h5("Quality Control Insights:"),
+                tags$ul(
+                  tags$li("High disparity devices require immediate inspection"),
+                  tags$li("Pattern analysis can reveal systematic manufacturing issues"),
+                  tags$li("Outliers may represent either defects or innovations")
+                )
+            )
+        )
+      ),
+      
+      conditionalPanel(
+        condition = "input.show_branch4 % 2 == 1",
+        div(id = "branch4_content",
+            h3("Branch 4: Seasonality & Production Planning"),
+            p("Historical demand pattern analysis reveals optimal production timing. 
+              Peak periods indicate when to increase raw material inventory and 
+              ramp up manufacturing capacity for maximum market capture."),
+            plotlyOutput("seasonalityPlotOutput", height = "400px"),
+            br(),
+            div(class = "alert alert-primary",
+                h5("Business Intelligence:"),
+                tags$ul(
+                  tags$li("Q2 shows highest demand - plan inventory accordingly"),
+                  tags$li("Winter months (Dec-Feb) show reduced demand"),
+                  tags$li("Production scheduling should align with these patterns")
+                )
+            )
+        )
+      ),
+      
+      # Default welcome message
+      conditionalPanel(
+        condition = "input.show_branch1 % 2 == 0 && input.show_branch2 % 2 == 0 && 
+                     input.show_branch3 % 2 == 0 && input.show_branch4 % 2 == 0",
+        div(class = "jumbotron text-center",
+            h2("Welcome to Quantum Device Analytics"),
+            p("Select a branch from the sidebar to explore detailed analytics and insights."),
+            p("This dashboard provides comprehensive analysis across four key domains:"),
+            tags$ul(
+              tags$li(strong("Performance Distribution:"), " Statistical analysis of device error rates"),
+              tags$li(strong("Capability Analysis:"), " PCA-based device characterization"),
+              tags$li(strong("Outlier Detection:"), " Statistical disparity identification"),
+              tags$li(strong("Business Intelligence:"), " Seasonal demand patterns")
+            )
+        )
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+  # Render the plots
+  output$kolmoPlotOutput <- renderPlotly({
+    kolmo_plot
+  })
+  
+  output$pcaPlotOutput <- renderPlotly({
+    pca_plot
+  })
+  
+  output$disparityPlotOutput <- renderPlotly({
+    disparity_plot
+  })
+  
+  output$seasonalityPlotOutput <- renderPlotly({
+    seasonality_plot
+  })
+}
+
+# Run the app
+shinyApp(ui, server)

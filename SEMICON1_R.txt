@@ -1,0 +1,41 @@
+# Load required library
+library(plotly)
+
+# Select numeric variables for PCA
+wafer_data <- Semiconductor101[, c("Price_Wafer1", "Price_Wafer3")]
+
+# Run PCA (scale = TRUE standardizes values)
+pca_result <- prcomp(wafer_data, scale. = TRUE)
+
+# Get PCA scores (projections of the data onto principal components)
+scores <- as.data.frame(pca_result$x)
+
+# Get variance explained
+explained_var <- summary(pca_result)$importance[2,] * 100
+
+# Build interactive plotly scatter of PC1 vs PC2
+pca_plot <- plot_ly(
+  data = scores,
+  x = ~PC1,
+  y = ~PC2,
+  type = "scatter",
+  mode = "markers",
+  text = paste(
+    "Timestamp:", Semiconductor101$Timestamp,
+    "<br>Price_Wafer1:", Semiconductor101$Price_Wafer1,
+    "<br>Price_Wafer3:", Semiconductor101$Price_Wafer3
+  ),
+  hoverinfo = "text",
+  marker = list(size = 8, color = "steelblue", opacity = 0.7)
+) %>%
+  layout(
+    title = paste0(
+      "PCA of Wafer Prices (PC1: ", round(explained_var[1], 1), "%, ",
+      "PC2: ", round(explained_var[2], 1), "% variance explained)"
+    ),
+    xaxis = list(title = paste0("PC1 (", round(explained_var[1], 1), "%)")),
+    yaxis = list(title = paste0("PC2 (", round(explained_var[2], 1), "%)"))
+  )
+
+# Show PCA plot
+pca_plot

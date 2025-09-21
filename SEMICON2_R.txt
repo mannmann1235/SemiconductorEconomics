@@ -1,0 +1,27 @@
+# Build interactive disparity plot
+disparity_plot <- plot_ly(
+  data = scores,
+  x = ~PC1,
+  y = ~PC2,
+  type = "scatter",
+  mode = "markers",
+  color = ~Disparity,
+  colors = "Blues",   # switched to a safe built-in color scale
+  text = paste(
+    "Timestamp:", Semiconductor101$Timestamp,
+    "<br>Price_Wafer1:", Semiconductor101$Price_Wafer1,
+    "<br>Price_Wafer3:", Semiconductor101$Price_Wafer3,
+    "<br>Disparity (Mahalanobis):", round(scores$Disparity, 3)
+  ),
+  hoverinfo = "text",
+  marker = list(size = 9, opacity = 0.8, line = list(width = 0.5, color = 'black'))
+) %>%
+  layout(
+    title = "Statistical Disparity in PCA Space (Mahalanobis Distance)",
+    xaxis = list(title = "PC1"),
+    yaxis = list(title = "PC2"),
+    coloraxis = list(colorbar = list(title = "Disparity"))
+  )
+
+# Show plot
+disparity_plot

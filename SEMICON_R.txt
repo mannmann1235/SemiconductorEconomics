@@ -1,0 +1,36 @@
+# Load required library
+library(plotly)
+
+# Compute ECDFs for Wafer1 and Wafer3
+ecdf_w1 <- ecdf(Semiconductor101$Price_Wafer1)
+ecdf_w3 <- ecdf(Semiconductor101$Price_Wafer3)
+
+# Create a sequence of values to evaluate
+x_vals <- seq(
+  min(c(Semiconductor101$Price_Wafer1, Semiconductor101$Price_Wafer3)),
+  max(c(Semiconductor101$Price_Wafer1, Semiconductor101$Price_Wafer3)),
+  length.out = 200
+)
+
+# Evaluate ECDFs
+y_w1 <- ecdf_w1(x_vals)
+y_w3 <- ecdf_w3(x_vals)
+
+# Kolmogorov-Smirnov statistic (max distance between CDFs)
+ks_stat <- max(abs(y_w1 - y_w3))
+
+# Build interactive plotly plot
+kolmo_plot <- plot_ly(x = x_vals, y = y_w1, type = 'scatter', mode = 'lines',
+                      name = "ECDF - Wafer1",
+                      line = list(color = "blue")) %>%
+  add_trace(x = x_vals, y = y_w3, mode = 'lines',
+            name = "ECDF - Wafer3",
+            line = list(color = "red")) %>%
+  layout(
+    title = paste0("Kolmogorov ECDF Comparison (KS stat = ", round(ks_stat, 3), ")"),
+    xaxis = list(title = "Price"),
+    yaxis = list(title = "Empirical CDF")
+  )
+
+# Show the plot
+kolmo_plot
