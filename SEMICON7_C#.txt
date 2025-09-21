@@ -1,0 +1,104 @@
+using System;
+using System.Collections.Generic;
+
+namespace SemiconductorPipeline
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Simulated data logs
+            List<Dictionary<string, object>> dataLog = new List<Dictionary<string, object>>();
+
+            // Cube 1: Metrology / Inspection
+            var cube1Data = CollectMetrologyData();
+            if (cube1Data["Valid"].Equals(true))
+            {
+                Console.WriteLine("Cube 1: Metrology data collected successfully.");
+                dataLog.Add(cube1Data);
+
+                // Cube 2: Final Test / Electrical Test
+                var cube2Data = CollectFinalTestData();
+                if (cube2Data["Valid"].Equals(true))
+                {
+                    Console.WriteLine("Cube 2: Final Test data collected successfully.");
+                    dataLog.Add(cube2Data);
+
+                    // Cube 3: Tracking & Traceability
+                    var cube3Data = CollectTrackingData();
+                    if (cube3Data["Valid"].Equals(true))
+                    {
+                        Console.WriteLine("Cube 3: Tracking & Traceability data collected successfully.");
+                        dataLog.Add(cube3Data);
+
+                        Console.WriteLine("All stages completed. Data log:");
+                        PrintDataLog(dataLog);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Cube 3: Tracking data missing. Pipeline halted.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Cube 2: Final Test data invalid. Pipeline halted.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cube 1: Metrology data invalid. Pipeline halted.");
+            }
+        }
+
+        static Dictionary<string, object> CollectMetrologyData()
+        {
+            return new Dictionary<string, object>
+            {
+                { "Cube", 1 },
+                { "Stage", "Metrology" },
+                { "Valid", true },
+                { "LayerAlignment", 0.98 },
+                { "Defects", 2 },
+                { "Thickness", 300.5 } // nm
+            };
+        }
+
+        static Dictionary<string, object> CollectFinalTestData()
+        {
+            return new Dictionary<string, object>
+            {
+                { "Cube", 2 },
+                { "Stage", "Final Test" },
+                { "Valid", true },
+                { "Speed", 2.4 }, // GHz
+                { "Leakage", 0.05 }, // mA
+                { "Yield", 0.95 }  // 95%
+            };
+        }
+
+        static Dictionary<string, object> CollectTrackingData()
+        {
+            return new Dictionary<string, object>
+            {
+                { "Cube", 3 },
+                { "Stage", "Tracking & Traceability" },
+                { "Valid", true },
+                { "BatchID", "B1234" },
+                { "RFIDStatus", "Scanned" },
+                { "MESLogged", true }
+            };
+        }
+
+        static void PrintDataLog(List<Dictionary<string, object>> log)
+        {
+            foreach (var entry in log)
+            {
+                Console.WriteLine("-----");
+                foreach (var kvp in entry)
+                {
+                    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+                }
+            }
+        }
+    }
+}
