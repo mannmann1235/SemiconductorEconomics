@@ -1,0 +1,413 @@
+library(shiny)
+library(shinydashboard)
+library(shinyWidgets)
+
+# --- Sample Q&A dataset ---
+questions <- c(
+  "What's the current market value of this property?",
+  "Can this home be financed with a mortgage?",
+  "What's the total lot size and square footage?",
+  "Does it have a garage or parking space?",
+  "How old is the property?",
+  "Are there any existing liens or loans on it?",
+  "What would be the estimated monthly payment with a mortgage?",
+  "Can I see the full property history or disclosures?",
+  "Are nearby schools, malls, or hospitals?",
+  "Is the neighborhood safe or in a flood zone?",
+  "What's the process for making an offer or down payment?",
+  "How much are the annual property taxes?",
+  "Are there any HOA (Homeowners Association) fees?",
+  "Is rent-to-own an option for this property?",
+  "Is the listing still active or under contract?",
+  "Who is the developer or builder?",
+  "How long does mortgage approval usually take?",
+  "What documents are required to buy a home?",
+  "Is there a virtual tour or open house available?",
+  "Can the price be negotiated?"
+)
+
+answers <- c(
+  "The market value varies by location, size, and recent comparable sales in the area.",
+  "Yes, most homes can be financed through conventional, FHA, or VA loans depending on eligibility.",
+  "You can find lot and floor sizes in the property's MLS listing or appraisal report.",
+  "Most listings include garage or driveway details; this property includes one covered space.",
+  "This property is about 8 years old, built in 2017.",
+  "A title search will confirm if there are any existing liens or unpaid loans.",
+  "Estimated payments depend on your down payment and interest rate — usually $1,500–$2,000 per month for this range.",
+  "Yes, full property disclosures are available upon request from the listing agent.",
+  "Yes, it's close to good schools and shopping centers within a 10-minute drive.",
+  "The area is rated safe and outside the designated flood zone.",
+  "You'll need to submit an offer with an earnest deposit, followed by inspection and loan approval.",
+  "Property taxes are approximately $4,200 per year.",
+  "Yes, HOA fees are around $150 per month and include maintenance and amenities.",
+  "Some sellers offer rent-to-own options; it depends on the agreement.",
+  "The property is still active and accepting offers.",
+  "The builder is Sunrise Homes, known for residential developments in this area.",
+  "Loan approval typically takes 2–4 weeks depending on the lender.",
+  "You'll need ID, proof of income, pre-approval letter, and funds verification.",
+  "Yes, a virtual tour link is available on the listing page.",
+  "Yes, sellers are often open to negotiation based on offers."
+)
+
+# --- UI ---
+ui <- dashboardPage(
+  skin = "blue",
+  
+  # Header
+  dashboardHeader(
+    title = tags$div(
+      style = "display: flex; align-items: center; font-weight: 600;",
+      tags$span(style = "font-size: 20px; margin-right: 10px;", "🏦"),
+      "Premier Bank Realty"
+    ),
+    titleWidth = 300
+  ),
+  
+  # Sidebar
+  dashboardSidebar(
+    width = 300,
+    sidebarMenu(
+      menuItem("Home", tabName = "home", icon = icon("home")),
+      menuItem("Property Advisor", tabName = "chatbot", icon = icon("comments")),
+      menuItem("Mortgage Calculator", tabName = "calculator", icon = icon("calculator")),
+      menuItem("My Profile", tabName = "profile", icon = icon("user"))
+    ),
+    br(),
+    div(
+      style = "padding: 20px; background: #ecf0f5; margin: 10px; border-radius: 5px;",
+      h5(style = "color: #3c8dbc; font-weight: bold;", "Customer Support"),
+      p(style = "font-size: 12px; color: #666;", "Available 24/7"),
+      p(style = "font-size: 12px; color: #666;", "📞 1-800-REALTY"),
+      p(style = "font-size: 12px; color: #666;", "📧 support@premierbank.com")
+    )
+  ),
+  
+  # Body
+  dashboardBody(
+    tags$head(
+      tags$style(HTML("
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        body, .content-wrapper, .main-sidebar, .sidebar {
+          font-family: 'Roboto', sans-serif !important;
+        }
+        
+        .content-wrapper {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        
+        .box {
+          border-radius: 8px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          border-top: none !important;
+        }
+        
+        .box-header {
+          background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+          color: white;
+          border-radius: 8px 8px 0 0;
+          padding: 15px;
+        }
+        
+        .box-title {
+          font-size: 18px;
+          font-weight: 500;
+        }
+        
+        .info-box {
+          border-radius: 8px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          min-height: 100px;
+        }
+        
+        .chat-container {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          min-height: 300px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .question-card {
+          background: #f8f9fa;
+          border-left: 4px solid #3c8dbc;
+          padding: 15px;
+          margin-bottom: 15px;
+          border-radius: 5px;
+        }
+        
+        .answer-card {
+          background: #e8f4f8;
+          border-left: 4px solid #00a65a;
+          padding: 15px;
+          border-radius: 5px;
+        }
+        
+        .selectize-input {
+          border: 2px solid #3c8dbc;
+          border-radius: 5px;
+          font-size: 14px;
+        }
+        
+        .btn-primary {
+          background: linear-gradient(135deg, #3c8dbc 0%, #2a5298 100%);
+          border: none;
+          border-radius: 5px;
+          padding: 10px 25px;
+          font-weight: 500;
+        }
+        
+        .welcome-box {
+          background: white;
+          border-radius: 8px;
+          padding: 30px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          text-align: center;
+        }
+      "))
+    ),
+    
+    tabItems(
+      # Home Tab
+      tabItem(
+        tabName = "home",
+        fluidRow(
+          column(12,
+            div(class = "welcome-box",
+              h2(style = "color: #3c8dbc; font-weight: 600;", "Welcome to Premier Bank Realty"),
+              p(style = "font-size: 16px; color: #666; margin-top: 20px;",
+                "Your trusted partner in finding the perfect home with flexible financing options."),
+              br(),
+              actionButton("start_chat", "Start Property Consultation", 
+                          class = "btn btn-primary btn-lg",
+                          icon = icon("comments"))
+            )
+          )
+        ),
+        br(),
+        fluidRow(
+          valueBoxOutput("total_properties", width = 4),
+          valueBoxOutput("avg_rate", width = 4),
+          valueBoxOutput("satisfaction", width = 4)
+        ),
+        br(),
+        fluidRow(
+          box(
+            title = "Featured Properties", 
+            status = "primary", 
+            solidHeader = TRUE,
+            width = 12,
+            HTML("
+              <div style='display: flex; gap: 20px; flex-wrap: wrap;'>
+                <div style='flex: 1; min-width: 250px; background: #f8f9fa; padding: 15px; border-radius: 8px;'>
+                  <h4 style='color: #3c8dbc;'>Modern Family Home</h4>
+                  <p><strong>$385,000</strong></p>
+                  <p>4 Bed | 3 Bath | 2,400 sqft</p>
+                </div>
+                <div style='flex: 1; min-width: 250px; background: #f8f9fa; padding: 15px; border-radius: 8px;'>
+                  <h4 style='color: #3c8dbc;'>Downtown Condo</h4>
+                  <p><strong>$275,000</strong></p>
+                  <p>2 Bed | 2 Bath | 1,200 sqft</p>
+                </div>
+                <div style='flex: 1; min-width: 250px; background: #f8f9fa; padding: 15px; border-radius: 8px;'>
+                  <h4 style='color: #3c8dbc;'>Suburban Estate</h4>
+                  <p><strong>$550,000</strong></p>
+                  <p>5 Bed | 4 Bath | 3,800 sqft</p>
+                </div>
+              </div>
+            ")
+          )
+        )
+      ),
+      
+      # Chatbot Tab
+      tabItem(
+        tabName = "chatbot",
+        fluidRow(
+          box(
+            title = "Property Information Assistant",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 12,
+            div(
+              style = "background: white; padding: 20px; border-radius: 8px;",
+              selectInput("question", 
+                         "How can we assist you today?", 
+                         choices = c("Select a question..." = "", questions),
+                         width = "100%"),
+              br(),
+              uiOutput("chat_display")
+            )
+          )
+        ),
+        fluidRow(
+          box(
+            title = "Quick Actions",
+            status = "info",
+            width = 12,
+            actionButton("schedule_viewing", "Schedule Property Viewing", 
+                        icon = icon("calendar"), class = "btn btn-info"),
+            actionButton("apply_mortgage", "Apply for Pre-Approval", 
+                        icon = icon("file-alt"), class = "btn btn-success",
+                        style = "margin-left: 10px;"),
+            actionButton("contact_agent", "Contact Agent", 
+                        icon = icon("phone"), class = "btn btn-warning",
+                        style = "margin-left: 10px;")
+          )
+        )
+      ),
+      
+      # Calculator Tab
+      tabItem(
+        tabName = "calculator",
+        fluidRow(
+          box(
+            title = "Mortgage Calculator",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 6,
+            numericInput("loan_amount", "Loan Amount ($)", value = 300000, min = 0),
+            numericInput("interest_rate", "Interest Rate (%)", value = 3.5, min = 0, step = 0.1),
+            numericInput("loan_term", "Loan Term (years)", value = 30, min = 1),
+            numericInput("down_payment", "Down Payment ($)", value = 60000, min = 0),
+            actionButton("calculate", "Calculate Payment", class = "btn btn-primary")
+          ),
+          box(
+            title = "Monthly Payment Breakdown",
+            status = "success",
+            solidHeader = TRUE,
+            width = 6,
+            uiOutput("payment_result")
+          )
+        )
+      ),
+      
+      # Profile Tab
+      tabItem(
+        tabName = "profile",
+        fluidRow(
+          box(
+            title = "My Account",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 6,
+            HTML("
+              <div style='padding: 20px;'>
+                <h4>John Doe</h4>
+                <p><strong>Email:</strong> john.doe@email.com</p>
+                <p><strong>Phone:</strong> (555) 123-4567</p>
+                <p><strong>Member Since:</strong> January 2024</p>
+                <hr>
+                <h5>Saved Properties: 3</h5>
+                <h5>Pre-Approval Status: Approved</h5>
+              </div>
+            ")
+          ),
+          box(
+            title = "Recent Activity",
+            status = "info",
+            solidHeader = TRUE,
+            width = 6,
+            HTML("
+              <ul style='list-style: none; padding: 10px;'>
+                <li style='padding: 10px; border-bottom: 1px solid #eee;'>
+                  <strong>Property Viewed:</strong> Modern Family Home<br>
+                  <small>2 days ago</small>
+                </li>
+                <li style='padding: 10px; border-bottom: 1px solid #eee;'>
+                  <strong>Mortgage Pre-Approval:</strong> Submitted<br>
+                  <small>5 days ago</small>
+                </li>
+                <li style='padding: 10px;'>
+                  <strong>Consultation Scheduled:</strong> March 15, 2024<br>
+                  <small>1 week ago</small>
+                </li>
+              </ul>
+            ")
+          )
+        )
+      )
+    )
+  )
+)
+
+# --- Server ---
+server <- function(input, output, session) {
+  
+  # Value Boxes
+  output$total_properties <- renderValueBox({
+    valueBox(
+      "1,247", "Active Listings", icon = icon("home"),
+      color = "blue"
+    )
+  })
+  
+  output$avg_rate <- renderValueBox({
+    valueBox(
+      "3.5%", "Avg. Mortgage Rate", icon = icon("percent"),
+      color = "green"
+    )
+  })
+  
+  output$satisfaction <- renderValueBox({
+    valueBox(
+      "98%", "Customer Satisfaction", icon = icon("star"),
+      color = "yellow"
+    )
+  })
+  
+  # Chat Display
+  output$chat_display <- renderUI({
+    req(input$question != "")
+    
+    idx <- match(input$question, questions)
+    if (!is.na(idx)) {
+      tagList(
+        div(class = "question-card",
+          h5(style = "margin: 0; color: #3c8dbc;", icon("question-circle"), " Your Question:"),
+          p(style = "margin-top: 10px; font-size: 14px;", input$question)
+        ),
+        div(class = "answer-card",
+          h5(style = "margin: 0; color: #00a65a;", icon("check-circle"), " Our Answer:"),
+          p(style = "margin-top: 10px; font-size: 14px;", answers[idx])
+        )
+      )
+    }
+  })
+  
+  # Mortgage Calculator
+  observeEvent(input$calculate, {
+    loan <- input$loan_amount - input$down_payment
+    rate <- input$interest_rate / 100 / 12
+    n <- input$loan_term * 12
+    
+    if (rate > 0) {
+      monthly <- loan * (rate * (1 + rate)^n) / ((1 + rate)^n - 1)
+    } else {
+      monthly <- loan / n
+    }
+    
+    output$payment_result <- renderUI({
+      div(style = "padding: 20px;",
+        h3(style = "color: #00a65a; font-weight: 600;", 
+           paste0("$", format(round(monthly, 2), big.mark = ",", nsmall = 2))),
+        p("Estimated Monthly Payment"),
+        hr(),
+        p(strong("Principal & Interest: "), paste0("$", format(round(monthly, 2), big.mark = ","))),
+        p(strong("Property Tax (est.): "), "$350/month"),
+        p(strong("Insurance (est.): "), "$150/month"),
+        hr(),
+        h4(style = "color: #3c8dbc;", 
+           paste0("Total: $", format(round(monthly + 500, 2), big.mark = ",")))
+      )
+    })
+  })
+  
+  # Navigation
+  observeEvent(input$start_chat, {
+    updateTabItems(session, "sidebar", "chatbot")
+  })
+}
+
+# --- Run App ---
+shinyApp(ui = ui, server = server)
